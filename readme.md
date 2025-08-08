@@ -7,7 +7,7 @@
 [![Chrome Extension](https://img.shields.io/badge/Chrome-Extension-blue)](https://developer.chrome.com/docs/extensions/)
 [![Solana](https://img.shields.io/badge/Solana-Blockchain-purple)](https://solana.com/)
 
-![ARX Banner](assets/banner.png)
+![ARX Banner](assets/banner1.png)
 
 ARX is a sophisticated browser extension that provides real-time tracking of Solana blockchain wallets with immersive 3D visualizations powered by Three.js. Monitor transactions, analyze trading patterns, and stay updated with live blockchain data directly in your browser.
 
