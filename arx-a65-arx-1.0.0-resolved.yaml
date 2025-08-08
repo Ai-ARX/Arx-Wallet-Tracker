@@ -2,292 +2,771 @@ openapi: 3.0.3
 info:
   title: ARX TRACK API
   description: |
-    API para el ecosistema ARX TRACK, plataforma avanzada de tracking de wallets, señales en tiempo real, automatización y análisis AI para traders Web3.
+    Advanced API for ARX TRACK ecosystem - AI-powered Web3 wallet tracking platform providing real-time signals,
+    automated trading execution, and deep blockchain analytics. Features include multi-chain support, predictive
+    modeling, risk assessment, and portfolio optimization tools.
+  license:
+    name: Proprietary
+    url: https://arxtrack.fun/terms
   contact:
-    name: Equipo ARX TRACK
-    email: support@arxtrack.fun
-  version: 1.0.0
+    name: ARX TRACK Development Team
+    email: api-support@arxtrack.fun
+    url: https://arxtrack.fun/docs
+  version: 2.3.0
 servers:
-- url: https://virtserver.swaggerhub.com/arx-a65/arx/1.0.0
-  description: SwaggerHub API Auto Mocking
-- url: https://api.arxtrack.fun/v1
-  description: API Producción
-- url: https://staging-api.arxtrack.fun/v1
-  description: API Staging
+- url: https://api.arxtrack.fun/v2
+  description: Production API
+- url: https://staging-api.arxtrack.fun/v2
+  description: Staging Environment
+- url: https://sandbox-api.arxtrack.fun/v2
+  description: Sandbox (Testing)
+- url: https://api.eu.arxtrack.fun/v2
+  description: European Region
+externalDocs:
+  description: ARX TRACK API Documentation
+  url: https://docs.arxtrack.fun/api
+
 tags:
+- name: Authentication
+  description: Endpoints for API key management and authentication
 - name: Wallets
-  description: Operaciones para consultar perfiles y datos on-chain de wallets.
+  description: Wallet profiling, tracking, and on-chain analytics
 - name: Signals
-  description: Señales en tiempo real generadas por AI basadas en actividad de wallets.
+  description: AI-generated trading signals and market intelligence
 - name: Automation
-  description: Gestión de reglas para trading automático basado en señales.
+  description: Rules engine for automated trading strategies
 - name: AI
-  description: Consultas al motor AI para análisis y recomendaciones.
+  description: Advanced AI analysis and predictive modeling
+- name: Portfolio
+  description: Portfolio management and optimization tools
+- name: Alerts
+  description: Real-time monitoring and notification system
+- name: Market
+  description: Market data and liquidity analysis
+- name: Institutional
+  description: Enterprise-grade features for institutional clients
+
 paths:
-  /wallets/{address}:
-    get:
-      tags:
-      - Wallets
-      summary: Obtener perfil de wallet
-      description: |
-        Consulta datos públicos, score AI, balances y actividad on-chain para una wallet.
-      parameters:
-      - name: address
-        in: path
-        description: "Dirección pública de la wallet (Solana, EVM, etc.)"
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          description: Perfil de wallet retornado exitosamente
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/inline_response_200"
-              example:
-                address: 4kD3bF2xE9j8YsEPrLfZ1a7C2wz...
-                chain: Solana
-                reputationScore: 87
-                riskLevel: LOW
-                totalValueUSD: 152300.55
-                tokens:
-                - symbol: SOL
-                  balance: 530
-                - symbol: USDC
-                  balance: 24500
-        "404":
-          description: Wallet no encontrada
-  /signals/latest:
-    get:
-      tags:
-      - Signals
-      summary: Obtener últimas señales
-      description: Retorna las señales de trading recientes generadas por AI.
-      parameters:
-      - name: limit
-        in: query
-        description: Número máximo de señales a retornar
-        required: false
-        schema:
-          maximum: 100
-          minimum: 1
-          type: integer
-          default: 10
-      responses:
-        "200":
-          description: Lista de señales de trading
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/inline_response_200_1"
-              example:
-              - id: sig_001
-                type: BUY
-                token: ARX
-                confidence: 0.92
-                timestamp: 2025-08-08T07:16:41Z
-              - id: sig_002
-                type: SELL
-                token: SOL
-                confidence: 0.85
-                timestamp: 2025-08-08T07:20:13Z
-  /automation/rules:
+  /auth/key:
     post:
-      tags:
-      - Automation
-      summary: Crear regla de trading automático
-      description: Configura una regla para ejecutar órdenes automáticas según actividad detectada.
+      tags: [Authentication]
+      summary: Generate API key
+      description: Create a new API key with specified permissions
       requestBody:
+        required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/automation_rules_body"
-            example:
-              wallet: 4kD3bF2xE9j8YsEPrLfZ1a7C2wz...
-              action: BUY
-              token: ARX
-              amount: 50
-              slippage: 1
-        required: true
+              $ref: "#/components/schemas/ApiKeyRequest"
       responses:
         "201":
-          description: Regla creada correctamente
+          description: API key generated successfully
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/inline_response_201"
-              example:
-                ruleId: auto_001
-                status: ACTIVE
-  /automation/rules/{ruleId}:
-    delete:
-      tags:
-      - Automation
-      summary: Eliminar regla de trading automático
-      description: Borra una regla de trading automática mediante su ID.
+                $ref: "#/components/schemas/ApiKeyResponse"
+        "403":
+          description: Permission denied
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /wallets/{chain}/{address}:
+    get:
+      tags: [Wallets]
+      summary: Get comprehensive wallet profile
+      description: Retrieve complete wallet information including balances, transactions, and AI analysis
       parameters:
-      - name: ruleId
-        in: path
-        description: ID de la regla a eliminar
+      - $ref: "#/components/parameters/chainParam"
+      - $ref: "#/components/parameters/addressParam"
+      - name: extended
+        in: query
+        description: Include extended data (transactions, NFTs, etc.)
+        schema:
+          type: boolean
+          default: false
+      - name: refresh
+        in: query
+        description: Force fresh data refresh
+        schema:
+          type: boolean
+          default: false
+      responses:
+        "200":
+          description: Wallet data retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WalletProfile"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /wallets/batch:
+    post:
+      tags: [Wallets]
+      summary: Batch wallet lookup
+      description: Get data for multiple wallets in a single request
+      requestBody:
         required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BatchWalletRequest"
+      responses:
+        "200":
+          description: Batch results returned
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BatchWalletResponse"
+
+  /signals/live:
+    get:
+      tags: [Signals]
+      summary: Subscribe to live signal stream
+      description: WebSocket endpoint for real-time trading signals
+      parameters:
+      - name: chains
+        in: query
+        description: Filter by blockchain networks
+        schema:
+          type: array
+          items:
+            type: string
+      - name: minConfidence
+        in: query
+        description: Minimum confidence threshold (0.0-1.0)
+        schema:
+          type: number
+          default: 0.7
+      responses:
+        "101":
+          description: Switching to WebSocket protocol
+
+  /signals/historical:
+    get:
+      tags: [Signals]
+      summary: Retrieve historical signals
+      description: Get past signals with filtering capabilities
+      parameters:
+      - $ref: "#/components/parameters/timeRangeStart"
+      - $ref: "#/components/parameters/timeRangeEnd"
+      - name: signalType
+        in: query
+        description: Filter by signal type
+        schema:
+          type: string
+          enum: [BUY, SELL, LIQUIDITY_IN, LIQUIDITY_OUT, WARNING]
+      responses:
+        "200":
+          description: Historical signals retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HistoricalSignals"
+
+  /automation/strategies:
+    get:
+      tags: [Automation]
+      summary: List available strategies
+      description: Get pre-built automated trading strategies
+      responses:
+        "200":
+          description: Strategy list returned
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StrategyList"
+
+    post:
+      tags: [Automation]
+      summary: Create custom strategy
+      description: Define a new automated trading strategy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StrategyDefinition"
+      responses:
+        "201":
+          description: Strategy created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StrategyResponse"
+
+  /automation/executions:
+    get:
+      tags: [Automation]
+      summary: Get strategy executions
+      description: View historical executions of automated strategies
+      parameters:
+      - $ref: "#/components/parameters/paginationLimit"
+      - $ref: "#/components/parameters/paginationOffset"
+      responses:
+        "200":
+          description: Executions retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExecutionHistory"
+
+  /ai/simulate:
+    post:
+      tags: [AI]
+      summary: Run trading simulation
+      description: Execute backtesting simulation with historical data
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SimulationRequest"
+      responses:
+        "200":
+          description: Simulation results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SimulationResult"
+
+  /ai/predict:
+    post:
+      tags: [AI]
+      summary: Get price prediction
+      description: Request AI-powered price prediction for tokens
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PredictionRequest"
+      responses:
+        "200":
+          description: Prediction results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PredictionResponse"
+
+  /portfolio/analyze:
+    post:
+      tags: [Portfolio]
+      summary: Analyze portfolio
+      description: Comprehensive portfolio risk and performance analysis
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PortfolioAnalysisRequest"
+      responses:
+        "200":
+          description: Analysis completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PortfolioAnalysis"
+
+  /alerts/watch:
+    post:
+      tags: [Alerts]
+      summary: Create alert rule
+      description: Set up custom alert conditions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AlertRule"
+      responses:
+        "201":
+          description: Alert created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AlertResponse"
+
+  /market/liquidity:
+    get:
+      tags: [Market]
+      summary: Get liquidity data
+      description: Retrieve liquidity metrics for tokens
+      parameters:
+      - name: tokens
+        in: query
+        required: true
+        description: Comma-separated list of token symbols
         schema:
           type: string
       responses:
         "200":
-          description: Confirmación de borrado
+          description: Liquidity data
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/inline_response_200_2"
-              example:
-                deleted: true
-        "404":
-          description: Regla no encontrada
-  /ai/analyze:
+                $ref: "#/components/schemas/LiquidityData"
+
+  /institutional/vault:
     post:
-      tags:
-      - AI
-      summary: Ejecutar análisis AI
-      description: Envia datos de wallets o tokens para análisis y recomendaciones AI.
+      tags: [Institutional]
+      summary: Create managed vault
+      description: Enterprise-grade managed investment vault
+      security:
+      - InstitutionalApiKey: []
       requestBody:
+        required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ai_analyze_body"
-            example:
-              type: wallet
-              target: 4kD3bF2xE9j8YsEPrLfZ1a7C2wz...
-        required: true
+              $ref: "#/components/schemas/VaultCreation"
       responses:
-        "200":
-          description: Resultados del análisis AI
+        "201":
+          description: Vault created
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/inline_response_200_3"
-              example:
-                summary: Wallet acumula tokens ARX y distribuye USDC.
-                recommendations:
-                - Considera mantener ARX corto plazo.
-                - Monitorea liquidez de pools USDC.
+                $ref: "#/components/schemas/VaultResponse"
+
 components:
   schemas:
-    inline_response_200:
+    ApiKeyRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Key identifier
+        permissions:
+          type: array
+          items:
+            type: string
+            enum: [READ, WRITE, TRADE, ADMIN]
+        expiresAt:
+          type: string
+          format: date-time
+          description: Optional expiration date
+      required: [name, permissions]
+
+    ApiKeyResponse:
+      type: object
+      properties:
+        key:
+          type: string
+          description: Generated API key
+        secret:
+          type: string
+          description: Secret for key verification
+        createdAt:
+          type: string
+          format: date-time
+
+    WalletProfile:
       type: object
       properties:
         address:
           type: string
-          description: Dirección de la wallet
         chain:
           type: string
-          description: "Cadena (Solana, Ethereum, etc.)"
-        reputationScore:
-          type: integer
-          description: Puntuación AI de reputación (0-100)
-        riskLevel:
+        firstSeen:
           type: string
-          description: Nivel de riesgo calculado
-          enum:
-          - LOW
-          - MEDIUM
-          - HIGH
-        totalValueUSD:
+          format: date-time
+        lastActivity:
+          type: string
+          format: date-time
+        reputationScore:
           type: number
-          description: Valor estimado total en USD
-          format: float
-        tokens:
+          minimum: 0
+          maximum: 100
+        riskAssessment:
+          $ref: "#/components/schemas/RiskProfile"
+        balances:
           type: array
-          description: Lista de tokens con balances
+          items:
+            $ref: "#/components/schemas/TokenBalance"
+        transactions:
+          type: array
+          items:
+            $ref: "#/components/schemas/Transaction"
+        nfts:
+          type: array
+          items:
+            $ref: "#/components/schemas/NFT"
+        aiInsights:
+          type: array
+          items:
+            type: string
+          description: AI-generated insights about wallet behavior
+
+    RiskProfile:
+      type: object
+      properties:
+        level:
+          type: string
+          enum: [LOW, MEDIUM, HIGH, EXTREME]
+        factors:
+          type: array
+          items:
+            type: string
+          description: Risk contributing factors
+        confidence:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+
+    TokenBalance:
+      type: object
+      properties:
+        token:
+          type: string
+        symbol:
+          type: string
+        amount:
+          type: number
+        valueUSD:
+          type: number
+        priceChange24h:
+          type: number
+          description: Percentage change
+
+    Transaction:
+      type: object
+      properties:
+        hash:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        type:
+          type: string
+        value:
+          type: number
+        counterparties:
+          type: array
+          items:
+            type: string
+
+    NFT:
+      type: object
+      properties:
+        contract:
+          type: string
+        tokenId:
+          type: string
+        name:
+          type: string
+        valueEstimate:
+          type: number
+
+    BatchWalletRequest:
+      type: object
+      properties:
+        wallets:
+          type: array
           items:
             type: object
             properties:
-              symbol:
+              chain:
                 type: string
-              balance:
-                type: number
-    inline_response_200_1:
+              address:
+                type: string
+          minItems: 1
+          maxItems: 50
+        options:
+          type: object
+          properties:
+            includeBalances:
+              type: boolean
+            includeTxns:
+              type: boolean
+            includeNFTs:
+              type: boolean
+
+    BatchWalletResponse:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: "#/components/schemas/WalletProfile"
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              address:
+                type: string
+              error:
+                type: string
+
+    HistoricalSignals:
+      type: object
+      properties:
+        signals:
+          type: array
+          items:
+            $ref: "#/components/schemas/Signal"
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+
+    Signal:
       type: object
       properties:
         id:
           type: string
-        type:
-          type: string
-          description: Tipo de señal (compra o venta)
-          enum:
-          - BUY
-          - SELL
-        token:
-          type: string
-        confidence:
-          type: number
-          description: Confianza AI (0-1)
-          format: float
         timestamp:
           type: string
           format: date-time
-    automation_rules_body:
-      required:
-      - action
-      - amount
-      - slippage
-      - token
-      - wallet
-      type: object
-      properties:
-        wallet:
+        type:
           type: string
-          description: Wallet a monitorear
-        action:
-          type: string
-          description: Acción que dispara la regla
-          enum:
-          - BUY
-          - SELL
         token:
           type: string
-          description: Token a comprar o vender
-        amount:
+        chain:
+          type: string
+        confidence:
           type: number
-          description: Cantidad de tokens a operar
-        slippage:
+        expectedImpact:
           type: number
-          description: Porcentaje máximo de slippage aceptado
-    inline_response_201:
+          description: Expected price impact percentage
+        rationale:
+          type: string
+          description: AI explanation for signal
+
+    StrategyDefinition:
       type: object
       properties:
-        ruleId:
+        name:
           type: string
-        status:
+        description:
           type: string
-    inline_response_200_2:
-      type: object
-      properties:
-        deleted:
-          type: boolean
-    ai_analyze_body:
-      required:
-      - target
-      - type
+        triggers:
+          type: array
+          items:
+            $ref: "#/components/schemas/TriggerCondition"
+        actions:
+          type: array
+          items:
+            $ref: "#/components/schemas/TradeAction"
+        riskParameters:
+          $ref: "#/components/schemas/RiskParameters"
+
+    TriggerCondition:
       type: object
       properties:
         type:
           type: string
-          description: Tipo de objetivo a analizar
-          enum:
-          - wallet
-          - token
-        target:
-          type: string
-          description: Dirección wallet o símbolo de token
-    inline_response_200_3:
+          enum: [PRICE, VOLUME, WALLET_ACTIVITY, MARKET_CAP, SOCIAL_TREND]
+        parameters:
+          type: object
+
+    TradeAction:
       type: object
       properties:
-        summary:
+        type:
           type: string
-        recommendations:
+          enum: [BUY, SELL, SWAP, STAKE, BRIDGE]
+        token:
+          type: string
+        amount:
+          type: number
+        slippage:
+          type: number
+
+    RiskParameters:
+      type: object
+      properties:
+        maxExposure:
+          type: number
+        stopLoss:
+          type: number
+        takeProfit:
+          type: number
+        cooldown:
+          type: number
+          description: Minutes between executions
+
+    SimulationRequest:
+      type: object
+      properties:
+        strategy:
+          $ref: "#/components/schemas/StrategyDefinition"
+        timeframe:
+          $ref: "#/components/schemas/TimeRange"
+        initialCapital:
+          type: number
+        assets:
           type: array
           items:
             type: string
+
+    SimulationResult:
+      type: object
+      properties:
+        performance:
+          type: number
+          description: Percentage return
+        trades:
+          type: array
+          items:
+            $ref: "#/components/schemas/SimulatedTrade"
+        metrics:
+          $ref: "#/components/schemas/PerformanceMetrics"
+
+    PerformanceMetrics:
+      type: object
+      properties:
+        sharpeRatio:
+          type: number
+        maxDrawdown:
+          type: number
+        winRate:
+          type: number
+
+    PortfolioAnalysisRequest:
+      type: object
+      properties:
+        wallets:
+          type: array
+          items:
+            type: object
+            properties:
+              chain:
+                type: string
+              address:
+                type: string
+        options:
+          type: object
+          properties:
+            riskModel:
+              type: string
+            timeHorizon:
+              type: string
+
+    PortfolioAnalysis:
+      type: object
+      properties:
+        diversificationScore:
+          type: number
+        riskAssessment:
+          $ref: "#/components/schemas/RiskProfile"
+        recommendedAdjustments:
+          type: array
+          items:
+            $ref: "#/components/schemas/PortfolioAdjustment"
+
+    PortfolioAdjustment:
+      type: object
+      properties:
+        action:
+          type: string
+        token:
+          type: string
+        amount:
+          type: number
+        rationale:
+          type: string
+
+    VaultCreation:
+      type: object
+      properties:
+        name:
+          type: string
+        strategy:
+          type: string
+        investors:
+          type: array
+          items:
+            type: string
+        terms:
+          $ref: "#/components/schemas/VaultTerms"
+
+    VaultTerms:
+      type: object
+      properties:
+        managementFee:
+          type: number
+        performanceFee:
+          type: number
+        lockupPeriod:
+          type: number
+        minInvestment:
+          type: number
+
+  parameters:
+    chainParam:
+      name: chain
+      in: path
+      description: Blockchain network identifier
+      required: true
+      schema:
+        type: string
+        enum: [solana, ethereum, polygon, arbitrum, avalanche, bsc]
+
+    addressParam:
+      name: address
+      in: path
+      description: Wallet public address
+      required: true
+      schema:
+        type: string
+        pattern: '^0x[a-fA-F0-9]{40}$|^[1-9A-HJ-NP-Za-km-z]{32,44}$'
+
+    timeRangeStart:
+      name: start
+      in: query
+      description: Start timestamp for historical data
+      required: true
+      schema:
+        type: string
+        format: date-time
+
+    timeRangeEnd:
+      name: end
+      in: query
+      description: End timestamp for historical data
+      schema:
+        type: string
+        format: date-time
+
+    paginationLimit:
+      name: limit
+      in: query
+      description: Number of items per page
+      schema:
+        type: integer
+        default: 20
+        maximum: 100
+
+    paginationOffset:
+      name: offset
+      in: query
+      description: Pagination offset
+      schema:
+        type: integer
+        default: 0
+
+  responses:
+    NotFound:
+      description: The requested resource was not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              code:
+                type: string
+
+  securitySchemes:
+    ApiKey:
+      type: apiKey
+      in: header
+      name: X-API-KEY
+    InstitutionalApiKey:
+      type: apiKey
+      in: header
+      name: X-INSTITUTIONAL-KEY
+      description: Special key for enterprise features
