@@ -1,0 +1,293 @@
+openapi: 3.0.3
+info:
+  title: ARX TRACK API
+  description: |
+    API para el ecosistema ARX TRACK, plataforma avanzada de tracking de wallets, señales en tiempo real, automatización y análisis AI para traders Web3.
+  contact:
+    name: Equipo ARX TRACK
+    email: support@arxtrack.fun
+  version: 1.0.0
+servers:
+- url: https://virtserver.swaggerhub.com/arx-a65/arx/1.0.0
+  description: SwaggerHub API Auto Mocking
+- url: https://api.arxtrack.fun/v1
+  description: API Producción
+- url: https://staging-api.arxtrack.fun/v1
+  description: API Staging
+tags:
+- name: Wallets
+  description: Operaciones para consultar perfiles y datos on-chain de wallets.
+- name: Signals
+  description: Señales en tiempo real generadas por AI basadas en actividad de wallets.
+- name: Automation
+  description: Gestión de reglas para trading automático basado en señales.
+- name: AI
+  description: Consultas al motor AI para análisis y recomendaciones.
+paths:
+  /wallets/{address}:
+    get:
+      tags:
+      - Wallets
+      summary: Obtener perfil de wallet
+      description: |
+        Consulta datos públicos, score AI, balances y actividad on-chain para una wallet.
+      parameters:
+      - name: address
+        in: path
+        description: "Dirección pública de la wallet (Solana, EVM, etc.)"
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Perfil de wallet retornado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/inline_response_200"
+              example:
+                address: 4kD3bF2xE9j8YsEPrLfZ1a7C2wz...
+                chain: Solana
+                reputationScore: 87
+                riskLevel: LOW
+                totalValueUSD: 152300.55
+                tokens:
+                - symbol: SOL
+                  balance: 530
+                - symbol: USDC
+                  balance: 24500
+        "404":
+          description: Wallet no encontrada
+  /signals/latest:
+    get:
+      tags:
+      - Signals
+      summary: Obtener últimas señales
+      description: Retorna las señales de trading recientes generadas por AI.
+      parameters:
+      - name: limit
+        in: query
+        description: Número máximo de señales a retornar
+        required: false
+        schema:
+          maximum: 100
+          minimum: 1
+          type: integer
+          default: 10
+      responses:
+        "200":
+          description: Lista de señales de trading
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/inline_response_200_1"
+              example:
+              - id: sig_001
+                type: BUY
+                token: ARX
+                confidence: 0.92
+                timestamp: 2025-08-08T07:16:41Z
+              - id: sig_002
+                type: SELL
+                token: SOL
+                confidence: 0.85
+                timestamp: 2025-08-08T07:20:13Z
+  /automation/rules:
+    post:
+      tags:
+      - Automation
+      summary: Crear regla de trading automático
+      description: Configura una regla para ejecutar órdenes automáticas según actividad detectada.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/automation_rules_body"
+            example:
+              wallet: 4kD3bF2xE9j8YsEPrLfZ1a7C2wz...
+              action: BUY
+              token: ARX
+              amount: 50
+              slippage: 1
+        required: true
+      responses:
+        "201":
+          description: Regla creada correctamente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/inline_response_201"
+              example:
+                ruleId: auto_001
+                status: ACTIVE
+  /automation/rules/{ruleId}:
+    delete:
+      tags:
+      - Automation
+      summary: Eliminar regla de trading automático
+      description: Borra una regla de trading automática mediante su ID.
+      parameters:
+      - name: ruleId
+        in: path
+        description: ID de la regla a eliminar
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Confirmación de borrado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/inline_response_200_2"
+              example:
+                deleted: true
+        "404":
+          description: Regla no encontrada
+  /ai/analyze:
+    post:
+      tags:
+      - AI
+      summary: Ejecutar análisis AI
+      description: Envia datos de wallets o tokens para análisis y recomendaciones AI.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ai_analyze_body"
+            example:
+              type: wallet
+              target: 4kD3bF2xE9j8YsEPrLfZ1a7C2wz...
+        required: true
+      responses:
+        "200":
+          description: Resultados del análisis AI
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/inline_response_200_3"
+              example:
+                summary: Wallet acumula tokens ARX y distribuye USDC.
+                recommendations:
+                - Considera mantener ARX corto plazo.
+                - Monitorea liquidez de pools USDC.
+components:
+  schemas:
+    inline_response_200:
+      type: object
+      properties:
+        address:
+          type: string
+          description: Dirección de la wallet
+        chain:
+          type: string
+          description: "Cadena (Solana, Ethereum, etc.)"
+        reputationScore:
+          type: integer
+          description: Puntuación AI de reputación (0-100)
+        riskLevel:
+          type: string
+          description: Nivel de riesgo calculado
+          enum:
+          - LOW
+          - MEDIUM
+          - HIGH
+        totalValueUSD:
+          type: number
+          description: Valor estimado total en USD
+          format: float
+        tokens:
+          type: array
+          description: Lista de tokens con balances
+          items:
+            type: object
+            properties:
+              symbol:
+                type: string
+              balance:
+                type: number
+    inline_response_200_1:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          description: Tipo de señal (compra o venta)
+          enum:
+          - BUY
+          - SELL
+        token:
+          type: string
+        confidence:
+          type: number
+          description: Confianza AI (0-1)
+          format: float
+        timestamp:
+          type: string
+          format: date-time
+    automation_rules_body:
+      required:
+      - action
+      - amount
+      - slippage
+      - token
+      - wallet
+      type: object
+      properties:
+        wallet:
+          type: string
+          description: Wallet a monitorear
+        action:
+          type: string
+          description: Acción que dispara la regla
+          enum:
+          - BUY
+          - SELL
+        token:
+          type: string
+          description: Token a comprar o vender
+        amount:
+          type: number
+          description: Cantidad de tokens a operar
+        slippage:
+          type: number
+          description: Porcentaje máximo de slippage aceptado
+    inline_response_201:
+      type: object
+      properties:
+        ruleId:
+          type: string
+        status:
+          type: string
+    inline_response_200_2:
+      type: object
+      properties:
+        deleted:
+          type: boolean
+    ai_analyze_body:
+      required:
+      - target
+      - type
+      type: object
+      properties:
+        type:
+          type: string
+          description: Tipo de objetivo a analizar
+          enum:
+          - wallet
+          - token
+        target:
+          type: string
+          description: Dirección wallet o símbolo de token
+    inline_response_200_3:
+      type: object
+      properties:
+        summary:
+          type: string
+        recommendations:
+          type: array
+          items:
+            type: string
