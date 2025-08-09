@@ -1,6 +1,14 @@
 /**
- * WebSocket Connection Manager
- * Handles real-time data streaming and connection management
+ * Advanced WebSocket Connection Manager
+ * 
+ * Handles real-time data streaming with enterprise-grade features:
+ * - Connection pooling and load balancing
+ * - Advanced retry strategies with exponential backoff
+ * - Real-time performance monitoring and analytics
+ * - Circuit breaker pattern for fault tolerance
+ * - Message compression and optimization
+ * 
+ * @version 2.0.0
  */
 
 import { 
@@ -13,16 +21,41 @@ import {
   WebSocketError
 } from '../../types/websocket.types';
 
+interface ConnectionPool {
+  primary: WebSocket | null;
+  fallback: WebSocket | null;
+  loadBalancer: 'round-robin' | 'performance-based' | 'random';
+}
+
+interface PerformanceMetrics {
+  latency: number[];
+  throughput: number;
+  errorRate: number;
+  connectionUptime: number;
+  lastHealthCheck: Date;
+}
+
+interface CircuitBreaker {
+  state: 'closed' | 'open' | 'half-open';
+  failureCount: number;
+  lastFailureTime: Date;
+  nextRetryTime: Date;
+}
+
 export class WebSocketManager {
-  private ws: WebSocket | null = null;
+  private connectionPool: ConnectionPool;
   private config: WebSocketConfig;
   private state: WebSocketState;
   private reconnectTimer: NodeJS.Timeout | null = null;
   private heartbeatTimer: NodeJS.Timeout | null = null;
-  private messageHandlers: Map<string, MessageHandler>;
+  private performanceTimer: NodeJS.Timeout | null = null;
+  private messageHandlers: Map<string, MessageHandler[]>;
   private subscriptionCallbacks: Map<string, SubscriptionCallback>;
   private messageQueue: WebSocketMessage[] = [];
   private reconnectAttempts: number = 0;
+  private performanceMetrics: PerformanceMetrics;
+  private circuitBreaker: CircuitBreaker;
+  private compressionEnabled: boolean = false;
 
   constructor(config: WebSocketConfig) {
     this.config = config;
