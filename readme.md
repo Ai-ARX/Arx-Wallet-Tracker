@@ -5,7 +5,6 @@
 [![npm version](https://img.shields.io/npm/v/arx-ai-wallet-tracker.svg?style=flat-square)](https://www.npmjs.com/package/arx-ai-wallet-tracker)
 [![npm downloads](https://img.shields.io/npm/dm/arx-ai-wallet-tracker.svg?style=flat-square)](https://www.npmjs.com/package/arx-ai-wallet-tracker)
 [![NPM](https://img.shields.io/npm/l/arx-ai-wallet-tracker.svg?style=flat-square)](https://www.npmjs.com/package/arx-ai-wallet-tracker)
-[![npm bundle size](https://img.shields.io/bundlephobia/minzip/arx-ai-wallet-tracker?style=flat-square)](https://bundlephobia.com/package/arx-ai-wallet-tracker)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org/)
 [![Chrome Extension](https://img.shields.io/badge/Chrome-Extension-blue)](https://developer.chrome.com/docs/extensions/)
