@@ -4,7 +4,7 @@
  * Advanced blockchain wallet tracker with AI-powered analytics,
  * real-time monitoring, and comprehensive DeFi protocol integrations.
  * 
- * @package @arx/wallet-tracker
+ * @package arx-wallet-tracker
  * @version 1.0.0
  * @author ARX Team
  * @license MIT
@@ -113,7 +113,7 @@ export function createWalletTracker(config = {}) {
  * Package information
  */
 export const packageInfo = {
-  name: '@arx/wallet-tracker',
+  name: 'arx-wallet-tracker',
   version: '1.0.0',
   description: 'Advanced blockchain wallet tracker with AI-powered analytics',
   author: 'ARX Team',
