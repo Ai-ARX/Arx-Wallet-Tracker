@@ -1,0 +1,72 @@
+# Development files
+.git
+.github
+.husky
+.vscode
+.changeset
+
+# Build artifacts
+dist/
+build/
+coverage/
+*.log
+*.tgz
+
+# Development dependencies
+node_modules/
+yarn.lock
+package-lock.json
+
+# Test files
+__tests__/
+*.test.js
+*.test.ts
+jest.config.js
+.jest/
+
+# Development configs
+.eslintrc.json
+.eslintignore
+.prettierrc
+.prettierignore
+babel.config.js
+webpack.config.js
+
+# Environment files
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# IDE files
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Temporary files
+tmp/
+temp/
+
+# Documentation (keep only essential)
+docs/development/
+docs/monitoring/
+docs/user-guide/
+
+# Example files (optional - might want to keep for users)
+example/
+
+# Assets (large files)
+assets/3d/
+assets/banner1.png
+
+# Browser extension specific
+manifest.json
+popup.html
+content.js
+background.js
+
+# Scripts
+scripts/

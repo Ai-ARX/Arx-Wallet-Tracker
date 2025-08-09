@@ -1,8 +1,8 @@
 {
-  "name": "arx-browser-extension",
+  "name": "@arx/wallet-tracker",
   "version": "1.0.0",
-  "description": "Real-time Solana wallet tracker browser extension with 3D visualization",
-  "private": true,
+  "description": "Advanced blockchain wallet tracker with AI-powered analytics, real-time monitoring, and comprehensive DeFi protocol integrations",
+  "private": false,
   "workspaces": [
     "packages/*"
   ],
@@ -33,26 +33,34 @@
     "postinstall": "husky install"
   },
   "keywords": [
-    "solana",
+    "blockchain",
     "wallet",
     "tracker",
-    "browser-extension",
+    "analytics",
+    "defi",
+    "solana",
+    "ethereum",
     "crypto",
-    "blockchain",
-    "three.js",
+    "ai",
+    "machine-learning",
+    "real-time",
     "websocket",
-    "real-time"
+    "typescript",
+    "three.js",
+    "protocol-integration",
+    "risk-assessment",
+    "portfolio-management"
   ],
   "author": "ARX Team",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/arx-ai/arx-browser-extension.git"
+    "url": "https://github.com/Ai-ARX/Arx-Wallet-Tracker.git"
   },
   "bugs": {
-    "url": "https://github.com/arx-ai/arx-browser-extension/issues"
+    "url": "https://github.com/Ai-ARX/Arx-Wallet-Tracker/issues"
   },
-  "homepage": "https://github.com/arx-ai/arx-browser-extension#readme",
+  "homepage": "https://github.com/Ai-ARX/Arx-Wallet-Tracker#readme",
   "devDependencies": {
     "@babel/core": "^7.23.9",
     "@babel/plugin-proposal-class-properties": "^7.18.6",
