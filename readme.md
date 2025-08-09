@@ -2,6 +2,10 @@
 
 **Official Website:** []
 
+[![npm version](https://img.shields.io/npm/v/arx-ai-wallet-tracker.svg?style=flat-square)](https://www.npmjs.com/package/arx-ai-wallet-tracker)
+[![npm downloads](https://img.shields.io/npm/dm/arx-ai-wallet-tracker.svg?style=flat-square)](https://www.npmjs.com/package/arx-ai-wallet-tracker)
+[![NPM](https://img.shields.io/npm/l/arx-ai-wallet-tracker.svg?style=flat-square)](https://www.npmjs.com/package/arx-ai-wallet-tracker)
+[![npm bundle size](https://img.shields.io/bundlephobia/minzip/arx-ai-wallet-tracker?style=flat-square)](https://bundlephobia.com/package/arx-ai-wallet-tracker)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org/)
 [![Chrome Extension](https://img.shields.io/badge/Chrome-Extension-blue)](https://developer.chrome.com/docs/extensions/)
@@ -35,7 +39,34 @@ ARX is a sophisticated browser extension that provides real-time tracking of Sol
 
 ## Quick Start
 
-### Prerequisites
+### NPM Package Installation
+
+**Install as NPM Package:**
+```bash
+# Install via npm
+npm install arx-ai-wallet-tracker
+
+# Or via yarn
+yarn add arx-ai-wallet-tracker
+```
+
+**Usage in your project:**
+```javascript
+import { createWalletTracker, AnalyticsEngine } from 'arx-ai-wallet-tracker';
+
+// Initialize wallet tracker
+const tracker = createWalletTracker({
+  analytics: { enableRealTimeProcessing: true }
+});
+
+// Use analytics engine
+const analytics = new AnalyticsEngine(config);
+const profile = await analytics.analyzeWallet('wallet-address');
+```
+
+### Browser Extension Installation
+
+#### Prerequisites
 - Node.js 18.x or later
 - Yarn 1.x (required)
 - Chrome/Chromium browser
